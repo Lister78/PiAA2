@@ -39,6 +39,18 @@ double measureDijkstraTime(const Graph& graph, bool useMatrixRepresentation) {
     return time_span.count();
 }
 
+double measureBellmanFordTime(const Graph& graph) {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
+    ShortestPathSolver solver(graph);
+    int start = 0;
+    solver.bellmanFord(start);
+
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    return time_span.count();
+}
+
 int main() {
     const int numVertices[] = {10, 50, 100, 500, 1000};
     const double densities[] = {0.25, 0.5, 0.75, 1.0}; 
@@ -52,26 +64,33 @@ int main() {
         for (double density : densities) {
             cout << "Gęstość grafu: " << density << endl;
 
-            double totalTimeMatrix = 0.0;
-            double totalTimeList = 0.0;
+            double totalTimeMatrixDijkstra = 0.0;
+            double totalTimeListDijkstra = 0.0;
+            double totalTimeMatrixBellmanFord = 0.0;
+            double totalTimeListBellmanFord = 0.0;
 
             for (int j = 0; j < numInstances; ++j) {
                 Graph randomGraph = generateRandomGraph(V, density);
 
-                totalTimeMatrix += measureDijkstraTime(randomGraph, true);
+                totalTimeMatrixDijkstra += measureDijkstraTime(randomGraph, true);
+                totalTimeListDijkstra += measureDijkstraTime(randomGraph, false);
 
-                totalTimeList += measureDijkstraTime(randomGraph, false);
+                totalTimeMatrixBellmanFord += measureBellmanFordTime(randomGraph);
+                totalTimeListBellmanFord += measureBellmanFordTime(randomGraph);
             }
 
-            double avgTimeMatrix = totalTimeMatrix / numInstances;
-            double avgTimeList = totalTimeList / numInstances;
+            double avgTimeMatrixDijkstra = totalTimeMatrixDijkstra / numInstances;
+            double avgTimeListDijkstra = totalTimeListDijkstra / numInstances;
+            double avgTimeMatrixBellmanFord = totalTimeMatrixBellmanFord / numInstances;
+            double avgTimeListBellmanFord = totalTimeListBellmanFord / numInstances;
 
-            cout << "Średni czas dla macierzy sąsiedztwa: " << avgTimeMatrix << " sekund" << endl;
-            cout << "Średni czas dla listy sąsiedztwa: " << avgTimeList << " sekund" << endl;
+            cout << "Średni czas dla algorytmu Dijkstry (macierz sąsiedztwa): " << avgTimeMatrixDijkstra << " sekund" << endl;
+            cout << "Średni czas dla algorytmu Dijkstry (lista sąsiedztwa): " << avgTimeListDijkstra << " sekund" << endl;
+            cout << "Średni czas dla algorytmu Bellmana-Forda (macierz sąsiedztwa): " << avgTimeMatrixBellmanFord << " sekund" << endl;
+            cout << "Średni czas dla algorytmu Bellmana-Forda (lista sąsiedztwa): " << avgTimeListBellmanFord << " sekund" << endl;
             cout << endl;
         }
     }
 
     return 0;
 }
-
